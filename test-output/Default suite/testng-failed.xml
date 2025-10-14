@@ -6,9 +6,8 @@
       <class name="raulruiz.tests.SubmitOrderTest">
         <methods>
           <include name="launchApplication"/>
-          <include name="submitOrder"/>
+          <include name="submitOrder" invocation-numbers="0 1"/>
           <include name="tearDown"/>
-          <include name="OrderHistoryTest"/>
         </methods>
       </class> <!-- raulruiz.tests.SubmitOrderTest -->
     </classes>

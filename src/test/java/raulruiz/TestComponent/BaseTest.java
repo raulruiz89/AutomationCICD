@@ -10,6 +10,11 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
@@ -88,6 +93,77 @@ public class BaseTest {
 		return data;
 
 	}
+
+	public Object[][] getDataFromExcel(String filePath) throws IOException {
+
+		DataFormatter formatter = new DataFormatter();
+
+		try (FileInputStream fis = new FileInputStream(filePath); XSSFWorkbook workbook = new XSSFWorkbook(fis)) {
+
+			XSSFSheet sheet = workbook.getSheetAt(0);
+
+			int numberOfRows = sheet.getPhysicalNumberOfRows();
+			if (numberOfRows < 2) {
+				return new Object[0][1]; // no hay filas de datos
+			}
+
+			XSSFRow headerRow = sheet.getRow(0);
+			int colCount = headerRow.getLastCellNum();
+
+			// Leer encabezados
+			String[] headers = new String[colCount];
+			for (int j = 0; j < colCount; j++) {
+				XSSFCell cell = headerRow.getCell(j);
+				headers[j] = (cell == null) ? "" : formatter.formatCellValue(cell).trim();
+			}
+
+			// Cada fila de datos -> 1 HashMap como único parámetro del test
+			Object[][] data = new Object[numberOfRows - 1][1];
+
+			for (int i = 0; i < numberOfRows - 1; i++) {
+				XSSFRow row = sheet.getRow(i + 1);
+				java.util.HashMap<String, String> map = new java.util.LinkedHashMap<>();
+
+				for (int j = 0; j < colCount; j++) {
+					String key = (headers[j] == null) ? "" : headers[j].trim();
+					if (key.isEmpty())
+						continue; // columna sin encabezado: se omite
+
+					XSSFCell cell = (row == null) ? null : row.getCell(j);
+					String value = (cell == null) ? "" : formatter.formatCellValue(cell).trim();
+					map.put(key, value);
+				}
+
+				data[i][0] = map; // <- único argumento para submitOrder(HashMap<String,String> input)
+			}
+
+			return data;
+		}
+	}
+
+	///////////////////////////////////////////////////////////////////////////
+
+//		DataFormatter formatter = new DataFormatter();
+//
+//		FileInputStream fis = new FileInputStream(filePath);
+//		XSSFWorkbook workbook = new XSSFWorkbook(fis);
+//
+//		XSSFSheet sheet = workbook.getSheetAt(0);
+//		int numberOfRows = sheet.getPhysicalNumberOfRows();
+//		XSSFRow row = sheet.getRow(0);
+//		int colCount = row.getLastCellNum();
+//
+//		Object data[][] = new Object[numberOfRows - 1][colCount];
+//
+//		for (int i = 0; i < numberOfRows - 1; i++) {
+//			row = sheet.getRow(i + 1);
+//			for (int j = 0; j < colCount; j++) {
+//				XSSFCell cell = row.getCell(j);
+//				data[i][j] = formatter.formatCellValue(cell);
+//			}
+//		}
+//		
+//		return data;
 
 	public String getScreenshot(String testCaseName, WebDriver driver) throws IOException {
 		TakesScreenshot ts = (TakesScreenshot) driver;

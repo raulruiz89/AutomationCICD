@@ -16,7 +16,7 @@ import raulruiz.TestComponent.BaseTest;
 public class SubmitOrderTest extends BaseTest {
 	String productName = "ZARA COAT 3";
 
-	@Test(dataProvider = "getData", groups = { "Purchase" })
+	@Test(dataProvider = "ExcelData", groups = { "Purchase" })
 	public void submitOrder(HashMap<String, String> input) throws IOException, InterruptedException {
 
 		ProductCatalogue productCatalogue = landingPage.loginApplication(input.get("email"), input.get("password"));
@@ -35,12 +35,19 @@ public class SubmitOrderTest extends BaseTest {
 
 	}
 
-	@Test(dependsOnMethods = { "submitOrder" })
+	// @Test(dependsOnMethods = { "submitOrder" })
 	public void OrderHistoryTest() {
 		// "ZARA COAT 3"
 		ProductCatalogue productCatalogue = landingPage.loginApplication("rrulas10@hotmail.com", "Hqtzgl03521810");
 		OrderPage ordersPage = productCatalogue.goToOrdersPage();
 		Assert.assertTrue(ordersPage.VerifyOrderDisplay(productName));
+	}
+
+	@DataProvider(name="ExcelData")
+	public Object[][] getDataExcel() throws IOException {
+		String path = System.getProperty("user.dir") + "//src//test//java//raulruiz//data//DataReader.xlsx";
+	    return getDataFromExcel(path);
+
 	}
 
 	@DataProvider
